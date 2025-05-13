@@ -18,7 +18,8 @@ const userSchema = new mongoose.Schema({
     time_energy: { type: Number, default: 0, min: 0, max: 5 },
     values: { type: Number, default: 0, min: 0, max: 5 },
     vision: { type: Number, default: 0, min: 0, max: 5 },
-    evaluation: { type: Number, default: 0, min: 0, max: 5 }
+    evaluation: { type: Number, default: 0, min: 0, max: 5 },
+    totalScore: { type: Number, default: 0, min: 0, max: 50 },
 }, 
 // Add timestamps (createdAt, updatedAt)
 { timestamps: true }
