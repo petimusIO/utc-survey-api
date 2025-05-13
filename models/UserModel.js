@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
     vision: { type: Number, default: 0, min: 0, max: 5 },
     evaluation: { type: Number, default: 0, min: 0, max: 5 },
     totalScore: { type: Number, default: 0, min: 0, max: 50 },
+    category: { type: String, default: "Uncategorized" },
 }, 
 // Add timestamps (createdAt, updatedAt)
 { timestamps: true }
