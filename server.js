@@ -1,3 +1,4 @@
+const dotenv = require('dotenv').config();
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
@@ -24,8 +25,9 @@ app.use(cors({
 //  ==================== CONNECT 2 DATABASE =======================
 
 // link to access mongodb database
-const uri = 'mongodb+srv://pmm:ieh2ut6IGQEU8orr@pmm-survey.3ybya.mongodb.net/?retryWrites=true&w=majority&appName=PMM-Survey'
-// don't know how long it will take to connect to db, so we use ASYNC to try to connect
+const username = encodeURIComponent(dotenv.parsed.MONGO_USERNAME);
+const password = encodeURIComponent(dotenv.parsed.MONGO_PASSWORD);
+const uri = `mongodb+srv://${username}:${password}@utc-survey.biotw3c.mongodb.net/?retryWrites=true&w=majority&appName=UTC-Survey`;
 async function connect2Mongo(){
     try {
         await mongoose.connect(uri);
