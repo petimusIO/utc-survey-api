@@ -25,10 +25,14 @@ app.use(cors({
 //  ==================== CONNECT 2 DATABASE =======================
 
 // link to access mongodb database
-const username = encodeURIComponent(dotenv.parsed.MONGO_USERNAME);
-const password = encodeURIComponent(dotenv.parsed.MONGO_PASSWORD);
-console.log("Username: ", username);
-console.log("Password: ", password);
+// Access env vars safely whether from .env file or platform environment
+const username = encodeURIComponent(process.env.MONGO_USERNAME);
+const password = encodeURIComponent(process.env.MONGO_PASSWORD);
+// Only log in development environments
+if (process.env.NODE_ENV !== 'production') {
+  console.log("Username:", username ? "Found" : "Missing");
+  console.log("Password:", password ? "Found" : "Missing");
+}
 const uri = `mongodb+srv://${username}:${password}@utc-survey.biotw3c.mongodb.net/?retryWrites=true&w=majority&appName=UTC-Survey`;
 async function connect2Mongo(){
     try {
