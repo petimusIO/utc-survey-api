@@ -7,7 +7,12 @@ const userSchema = new mongoose.Schema({
         required: true, 
         unique: true,
         default: () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    },    
+    },
+    firstName: { type: String },
+    allowContact: { type: Boolean },
+    contactPreference: { type: String },
+    email: { type: String },
+    phoneNumber: { type: String },
     // New fields with validation (assuming scale is 0-5)
     development: { type: Number, default: 0, min: 0, max: 5 },
     guidance: { type: Number, default: 0, min: 0, max: 5 },
