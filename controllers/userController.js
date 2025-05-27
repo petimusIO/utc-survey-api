@@ -22,6 +22,11 @@ module.exports = {
             
             // Remove dbTable before processing data structure
             const { dbTable, ...userData } = data;
+
+            if ( (!userData.userId || userData.userId === null)) {
+                userData.userId = new mongoose.Types.ObjectId().toString();
+                console.log(`Added unique userId: ${userData.userId} for ${collectionName}`);
+            }
             
             if (mongoose.models[collectionName]) {
                 DynamicUserModel = mongoose.models[collectionName];
