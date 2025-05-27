@@ -17,16 +17,26 @@ module.exports = {
         console.log(`\nWriting to collection: ${collectionName}\n`);
     
         try {
-            // Database operations - no changes here
+            // Database operations with dynamic schema creation
             let DynamicUserModel;
+            
+            // Remove dbTable before processing data structure
+            const { dbTable, ...userData } = data;
+            
             if (mongoose.models[collectionName]) {
                 DynamicUserModel = mongoose.models[collectionName];
             } else {
-                DynamicUserModel = mongoose.model(collectionName, User.schema, collectionName);
+                // Create dynamic schema based on the incoming data structure
+                const schemaDefinition = createDynamicSchema(userData);
+                const dynamicSchema = new mongoose.Schema(schemaDefinition, { 
+                    strict: false,  // Allow fields not in schema
+                    timestamps: true // Add createdAt and updatedAt
+                });
+                
+                DynamicUserModel = mongoose.model(collectionName, dynamicSchema, collectionName);
             }
     
             // Save user data
-            const { dbTable, ...userData } = data;
             const newUser = new DynamicUserModel(userData);
             const savedUser = await newUser.save();
             console.log("\nUser saved to database:", savedUser);
@@ -44,9 +54,6 @@ module.exports = {
                 });
     
                 const audienceId = process.env.MAILCHIMP_AUDIENCE_ID;
-    
-                // Create a placeholder email if needed
-                
     
                 if (emailToUse) {
                     const response = await mailchimp.lists.addListMember(audienceId, {
@@ -72,22 +79,14 @@ module.exports = {
             // Add user to another Mailchimp list if needed
             try {
                 const secondaryAudienceId = process.env.MAILCHIMP_SECONDARY_AUDIENCE_ID;
-                // Format phone number for Mailchimp SMS
                 let formattedPhone = "";
                 if (userData.phoneNumber) {
-                    // Remove all non-digit characters
                     const digitsOnly = userData.phoneNumber.replace(/\D/g, '');
-                    
-                    // For US numbers: if 10 digits, add +1 country code
                     if (digitsOnly.length === 10) {
                         formattedPhone = `+1${digitsOnly}`;
-                    }
-                    // For numbers already with country code (11+ digits)
-                    else if (digitsOnly.length > 10) {
+                    } else if (digitsOnly.length > 10) {
                         formattedPhone = `+${digitsOnly}`;
-                    }
-                    // Other cases - just use what we have
-                    else {
+                    } else {
                         formattedPhone = digitsOnly;
                     }
                 }
@@ -99,7 +98,6 @@ module.exports = {
                             FNAME: userData.firstName || "",
                             LNAME: userData.lastName || "",
                             PHONE: userData.phoneNumber || "",
-                            //SMSPHONE: formattedPhone || "", // add when mailchimp supports it
                         }
                     });
                     console.log("\nUser added to secondary Mailchimp list:", secondaryResponse.id);
@@ -124,3 +122,27 @@ module.exports = {
         }
     }
 };
+
+// Helper function to create dynamic schema
+function createDynamicSchema(data) {
+    const schemaDefinition = {};
+    for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+            const value = data[key];
+            if (typeof value === 'string') {
+                schemaDefinition[key] = { type: String };
+            } else if (typeof value === 'number') {
+                schemaDefinition[key] = { type: Number };
+            } else if (typeof value === 'boolean') {
+                schemaDefinition[key] = { type: Boolean };
+            } else if (Array.isArray(value)) {
+                schemaDefinition[key] = { type: [mongoose.Schema.Types.Mixed] };
+            } else if (typeof value === 'object') {
+                schemaDefinition[key] = { type: mongoose.Schema.Types.Mixed };
+            } else {
+                schemaDefinition[key] = { type: mongoose.Schema.Types.Mixed };
+            }
+        }
+    }
+    return schemaDefinition;
+}
